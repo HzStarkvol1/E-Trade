@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - E-Trade</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+    <div th:if="${successMessage}" class="toast align-items-center text-bg-success border-0 fade-toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex position-relative z-1">
+            <div class="toast-body" th:text="${successMessage}"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<nav class="navbar navbar-dark bg-dark mb-4">
+    <div class="container-fluid">
+        <span class="navbar-brand mb-0 h1">E-Trade Admin Dashboard</span>
+        <a href="/admin/logout" class="btn btn-outline-light btn-sm">Çıkış Yap</a>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row">
+        <!-- Kullanıcılar -->
+        <div class="col-md-5 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-danger text-white fw-bold">Kayıtlı Kullanıcılar</div>
+                <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between align-items-center" th:each="user : ${users}">
+                            <span th:text="${user.username}">User</span>
+                            <form th:action="@{/admin/deleteUser/{id}(id=${user.id})}" method="post" style="margin: 0;">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Kullanıcıyı silmek istediğinize emin misiniz?');">Sil</button>
+                            </form>
+                        </li>
+                        <li class="list-group-item text-muted" th:if="${users.empty}">Hiç kullanıcı bulunamadı.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ürün Ekleme -->
+        <div class="col-md-7 mb-4">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white fw-bold">Yeni Ürün Ekle</div>
+                <div class="card-body">
+                    <form th:action="@{/admin/addProduct}" method="post">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Ürün Adı</label>
+                                <input type="text" class="form-control" name="name" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Kategori</label>
+                                <select class="form-select" name="category" required>
+                                    <option value="Elektronik">Elektronik</option>
+                                    <option value="Giyim">Giyim</option>
+                                    <option value="Ev & Yaşam">Ev & Yaşam</option>
+                                    <option value="Spor & Outdoor">Spor & Outdoor</option>
+                                    <option value="Kitap">Kitap</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Açıklama</label>
+                            <textarea class="form-control" name="description" rows="3" required></textarea>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Fiyat (₺)</label>
+                                <input type="number" step="0.01" class="form-control" name="price" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Stok Adedi</label>
+                                <input type="number" class="form-control" name="stock" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Resim URL (Opsiyonel)</label>
+                            <input type="url" class="form-control" name="imageUrl" placeholder="https://...">
+                        </div>
+                        <button type="submit" class="btn btn-success w-100">Ürünü Kaydet</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var toastElList = [].slice.call(document.querySelectorAll('.toast.fade-toast'));
+        toastElList.map(function (toastEl) {
+            new bootstrap.Toast(toastEl, { delay: 5000 }).show();
+        });
+    });
+</script>
+</body>
+</html>

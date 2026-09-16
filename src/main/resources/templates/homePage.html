@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="tr" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ana Sayfa - E-Trade</title>
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+            margin: 0;
+            padding-top: 60px;
+        }
+        
+        /* Navbar */
+        .navbar {
+            background-color: #0f172a !important; /* Premium Dark */
+            border-bottom: 1px solid #1e293b;
+        }
+        .navbar-brand {
+            letter-spacing: -0.5px;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 24px 20px;
+            background-color: #ffffff;
+            width: 260px;
+            overflow-y: auto;
+            border-right: 1px solid #e2e8f0;
+        }
+        .sidebar .form-label {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #64748b;
+        }
+        .sidebar .form-check-label {
+            color: #334155;
+            font-weight: 500;
+        }
+
+        /* Icerik Alani */
+        .main-content {
+            margin-left: 260px;
+            padding: 24px;
+        }
+        
+        /* Product Cards */
+        .product-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            transition: all 0.3s ease;
+            height: 100%;
+        }
+        .product-card:hover {
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            transform: translateY(-4px);
+        }
+        .card-img-top {
+            height: 220px;
+            object-fit: cover;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .card-title {
+            color: #0f172a;
+            font-size: 1.05rem;
+            letter-spacing: -0.2px;
+        }
+        .category-badge {
+            background-color: #f1f5f9;
+            color: #64748b;
+            font-weight: 500;
+            padding: 4px 8px;
+            font-size: 0.75rem;
+        }
+        .price-text {
+            color: #16a34a;
+            font-size: 1.15rem;
+        }
+        
+        /* Modal Info Design */
+        .modal-content {
+            border-radius: 16px;
+        }
+        .btn-modern {
+            background-color: #0f172a;
+            color: #ffffff;
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 10px;
+            transition: background-color 0.2s;
+            border: none;
+        }
+        .btn-modern:hover {
+            background-color: #1e293b;
+            color: #ffffff;
+        }
+
+        .toast-progress {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 4px;
+            background-color: rgba(255, 255, 255, 0.7);
+            animation: toast-timer 5s linear forwards;
+        }
+        @keyframes toast-timer {
+            0% { width: 100%; }
+            100% { width: 0%; }
+        }
+
+        /* Responsive Sidebar */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: static;
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+    <div class="container-fluid px-4">
+        <a class="navbar-brand fw-bold fs-4" href="#">E-Trade</a>
+        
+        <div class="d-flex flex-grow-1 justify-content-center px-4">
+            <input class="form-control me-2 rounded-pill px-4 bg-light border-0" type="search" id="searchInput" placeholder="Ürün ismi ile ara..." style="max-width: 450px;">
+        </div>
+
+        <div class="d-flex align-items-center text-white">
+            <span id="dateTimeWidget" class="me-4 text-muted fw-medium" style="font-size: 0.85rem;"></span>
+            
+            <div class="dropdown">
+                <button class="btn btn-dark border-secondary bg-transparent dropdown-toggle rounded-pill px-3" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <span th:text="${user != null ? user.username : 'Hesabım'}">Hesabım</span>
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2">
+                    <li><a class="dropdown-item text-danger fw-medium" href="/logout">Çıkış Yap</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<!-- Sidebar -->
+<nav class="sidebar">
+    <h6 class="fw-bold mb-4 text-dark fs-5">Filtreleme Seçenekleri</h6>
+    
+    <div class="mb-4">
+        <label class="form-label fw-bold">Kategoriler</label>
+        <div class="form-check mb-2">
+            <input class="form-check-input category-filter" type="checkbox" value="all" id="catAll" checked>
+            <label class="form-check-label" for="catAll">Tümü</label>
+        </div>
+        <div class="form-check mb-2">
+            <input class="form-check-input category-filter" type="checkbox" value="Elektronik" id="cat1">
+            <label class="form-check-label" for="cat1">Elektronik</label>
+        </div>
+        <div class="form-check mb-2">
+            <input class="form-check-input category-filter" type="checkbox" value="Giyim" id="cat2">
+            <label class="form-check-label" for="cat2">Giyim</label>
+        </div>
+        <div class="form-check mb-2">
+            <input class="form-check-input category-filter" type="checkbox" value="Ev & Yaşam" id="cat3">
+            <label class="form-check-label" for="cat3">Ev & Yaşam</label>
+        </div>
+        <div class="form-check mb-2">
+            <input class="form-check-input category-filter" type="checkbox" value="Spor & Outdoor" id="cat4">
+            <label class="form-check-label" for="cat4">Spor & Outdoor</label>
+        </div>
+        <div class="form-check mb-2">
+            <input class="form-check-input category-filter" type="checkbox" value="Kitap" id="cat5">
+            <label class="form-check-label" for="cat5">Kitap</label>
+        </div>
+    </div>
+    
+    <hr class="text-muted opacity-25 mb-4">
+
+    <div class="mb-3">
+        <label class="form-label fw-bold">Sıralama Ölçütü</label>
+        <select class="form-select bg-light border-0 shadow-none" id="sortSelect">
+            <option value="varsayilan">En Alakalı</option>
+            <option value="fiyat-artan">Fiyata Göre (Artan)</option>
+            <option value="fiyat-azalan">Fiyata Göre (Azalan)</option>
+        </select>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<div class="main-content">
+    
+    <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1055;">
+        <div th:if="${successMessage}" class="toast bg-success text-white border-0 fade-toast position-relative overflow-hidden" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex position-relative z-1 p-2">
+                <div class="toast-body fw-medium" th:text="${successMessage}"></div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-progress"></div>
+        </div>
+    </div>
+
+    <!-- Product Grid -->
+    <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 row-cols-xl-4 g-4" id="productContainer">
+        
+        <div class="col product-item" th:each="product : ${products}" 
+             th:data-category="${product.category}" 
+             th:data-name="${#strings.toLowerCase(product.name)}" 
+             th:data-price="${product.price}">
+            
+            <div class="card product-card flex-column">
+                <img th:src="${product.imageUrl != null} ? ${product.imageUrl} : 'https://dummyimage.com/300x200/e2e8f0/64748b.png&text=Resim+Yok'" class="card-img-top" alt="Product Image">
+                <div class="card-body d-flex flex-column p-4">
+                    <span class="badge category-badge rounded-pill mb-2 align-self-start" th:text="${product.category}">Kategori</span>
+                    <h6 class="card-title fw-bold text-truncate mb-3" th:text="${product.name}">Ürün Adı</h6>
+                    
+                    <div class="mt-auto d-flex justify-content-between align-items-center mb-3">
+                        <span class="price-text fw-bold" th:text="${product.price} + ' ₺'">₺0.00</span>
+                        <span class="text-muted" style="font-size: 0.8rem;" th:text="'Stok: ' + ${product.stock}">Stok</span>
+                    </div>
+
+                    <!-- Open Details Modal Button -->
+                    <button class="btn btn-modern w-100" type="button" 
+                            onclick="openProductModal(this)"
+                            th:data-modal-name="${product.name}"
+                            th:data-modal-category="${product.category}"
+                            th:data-modal-price="${product.price}"
+                            th:data-modal-stock="${product.stock}"
+                            th:data-modal-desc="${product.description}"
+                            th:data-modal-img="${product.imageUrl != null ? product.imageUrl : 'https://dummyimage.com/300x200/e2e8f0/64748b.png&text=Resim+Yok'}">
+                        Detayları İncele
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+    
+    <div id="noResultMsg" class="text-center mt-5 pt-5 d-none">
+        <h5 class="text-muted fw-normal">Aradığınız kriterlere uygun ürün bulunamadı.</h5>
+    </div>
+</div>
+
+<!-- Product Detail Modal (Industry Standard Design) -->
+<div class="modal fade" id="productDetailModal" tabindex="-1" aria-labelledby="productDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg p-3">
+      <div class="modal-header border-bottom-0 pb-0">
+        <button type="button" class="btn-close shadow-none" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pt-2 px-4 pb-4">
+        <div class="row align-items-stretch">
+          
+          <!-- Sol Yarı: Görsel + Fiyat + Stok -->
+          <div class="col-md-5 d-flex flex-column pe-md-4 border-end-md">
+            <div class="rounded overflow-hidden bg-light mb-4" style="height: 250px;">
+                <img id="modalProductImg" src="" class="w-100 h-100" style="object-fit: cover;" alt="Ürün Görseli">
+            </div>
+            <div class="d-flex justify-content-between align-items-center mt-auto bg-light rounded p-3">
+                <div>
+                    <span class="d-block text-muted" style="font-size: 0.8rem; text-transform: uppercase;">Fiyat</span>
+                    <h4 class="text-success mb-0 fw-bold"><span id="modalProductPrice"></span> ₺</h4>
+                </div>
+                <div class="text-end">
+                    <span class="d-block text-muted" style="font-size: 0.8rem; text-transform: uppercase;">Stok Durumu</span>
+                    <h5 class="mb-0 text-dark fw-bold" id="modalProductStock"></h5>
+                </div>
+            </div>
+          </div>
+          
+          <!-- Sağ Yarı: Ürün Bilgileri -->
+          <div class="col-md-7 ps-md-4 d-flex flex-column mt-4 mt-md-0">
+            <span id="modalProductCategory" class="text-uppercase text-muted fw-bold mb-2" style="font-size: 0.75rem; letter-spacing: 1px;">KATEGORİ</span>
+            <h3 id="modalProductName" class="fw-bold text-dark mb-4" style="letter-spacing: -0.5px; line-height: 1.3;">Ürün Adı</h3>
+            
+            <h6 class="fw-bold text-dark mb-3">Ürün Açıklaması</h6>
+            <p id="modalProductDesc" class="text-muted flex-grow-1" style="font-size: 0.95rem; line-height: 1.6;"></p>
+            
+            <div class="mt-4 pt-3 border-top">
+                <button type="button" class="btn btn-modern w-100 py-3" data-bs-dismiss="modal">Kapat</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Dinamik Modal Açma İşlemi
+    function openProductModal(btnElem) {
+        // Data özelliklerini butondan al
+        let name = btnElem.getAttribute('data-modal-name');
+        let cat = btnElem.getAttribute('data-modal-category');
+        let price = btnElem.getAttribute('data-modal-price');
+        let stock = btnElem.getAttribute('data-modal-stock');
+        let desc = btnElem.getAttribute('data-modal-desc');
+        let imgUrl = btnElem.getAttribute('data-modal-img');
+
+        // Modal içi elementlere yerleştir
+        document.getElementById('modalProductName').textContent = name;
+        document.getElementById('modalProductCategory').textContent = cat;
+        document.getElementById('modalProductPrice').textContent = price;
+        document.getElementById('modalProductStock').textContent = stock + " Adet";
+        document.getElementById('modalProductDesc').textContent = desc;
+        document.getElementById('modalProductImg').src = imgUrl;
+
+        // Modalı göster
+        var myModal = new bootstrap.Modal(document.getElementById('productDetailModal'));
+        myModal.show();
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+        
+        // 1. Toast / Bildirim
+        var toastElList = [].slice.call(document.querySelectorAll('.toast.fade-toast'));
+        toastElList.map(function (toastEl) {
+            new bootstrap.Toast(toastEl, { delay: 5000 }).show();
+        });
+
+        // 2. Dinamik Tarih Saat Güncelleyici
+        function updateDateTime() {
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' });
+            const timeStr = now.toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            document.getElementById('dateTimeWidget').innerText = dateStr + " | " + timeStr;
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime(); 
+
+        // 3. Statik Olmayan Arama, Filtreleme ve Sıralama
+        const searchInput = document.getElementById('searchInput');
+        const sortSelect = document.getElementById('sortSelect');
+        const categoryCheckboxes = document.querySelectorAll('.category-filter');
+        const catAll = document.getElementById('catAll');
+        const productContainer = document.getElementById('productContainer');
+        let productItems = Array.from(document.querySelectorAll('.product-item')); 
+        const noResultMsg = document.getElementById('noResultMsg');
+
+        categoryCheckboxes.forEach(chk => {
+            chk.addEventListener('change', function() {
+                if (this.id === 'catAll' && this.checked) {
+                    categoryCheckboxes.forEach(c => { if(c.id !== 'catAll') c.checked = false; });
+                } else if (this.id !== 'catAll' && this.checked) {
+                    catAll.checked = false;
+                }
+                let anyChecked = Array.from(categoryCheckboxes).some(c => c.checked && c.id !== 'catAll');
+                if(!anyChecked) catAll.checked = true;
+                applyFilters();
+            });
+        });
+
+        searchInput.addEventListener('input', applyFilters);
+        sortSelect.addEventListener('change', applyFilters);
+
+        function applyFilters() {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const sortVal = sortSelect.value;
+            let selectedCats = [];
+            
+            if (!catAll.checked) {
+                categoryCheckboxes.forEach(c => { if(c.checked) selectedCats.push(c.value); });
+            }
+
+            let visibleCount = 0;
+            productItems.forEach(item => {
+                const pName = item.getAttribute('data-name');
+                const pCat = item.getAttribute('data-category');
+                
+                const matchesSearch = pName.includes(searchTerm);
+                const matchesCat = (catAll.checked || selectedCats.includes(pCat));
+                
+                if (matchesSearch && matchesCat) {
+                    item.style.display = 'block'; 
+                    visibleCount++;
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            if (sortVal !== 'varsayilan') {
+                let sortedItems = productItems.sort((a, b) => {
+                    let aPrice = parseFloat(a.getAttribute('data-price'));
+                    let bPrice = parseFloat(b.getAttribute('data-price'));
+                    return sortVal === 'fiyat-artan' ? (aPrice - bPrice) : (bPrice - aPrice);
+                });
+                sortedItems.forEach(item => productContainer.appendChild(item));
+            }
+
+            if (visibleCount === 0) {
+                noResultMsg.classList.remove('d-none');
+            } else {
+                noResultMsg.classList.add('d-none');
+            }
+        }
+    });
+
+    // Custom CSS Inject for border-end responsive
+    const style = document.createElement('style');
+    style.innerHTML = `
+        @media (min-width: 768px) {
+            .border-end-md { border-right: 1px solid #e2e8f0; }
+        }
+    `;
+    document.head.appendChild(style);
+</script>
+</body>
+</html>
